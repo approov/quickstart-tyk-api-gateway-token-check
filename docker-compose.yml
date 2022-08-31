@@ -1,0 +1,31 @@
+version: '2.4'
+
+services:
+  tyk-gateway:
+    image: tykio/tyk-gateway:${TYK_DOCKER_IMAGE_TAG:-v4.1}
+    ports:
+      - ${TYK_HTTP_PORT:-8080}:8080
+    networks:
+      - tyk
+    volumes:
+      - ./examples/httpbin.org/tyk.standalone.conf:/opt/tyk-gateway/tyk.conf
+      - ./examples/httpbin.org/apps:/opt/tyk-gateway/apps
+      - ./examples/httpbin.org/policies:/opt/tyk-gateway/policies
+    environment:
+      - TYK_GW_SECRET=${TYK_GW_SECRET:? Missing .env var TYK_GW_SECRET}
+      - TYK_LOGLEVEL=${TYK_LOGLEVEL:-info}
+    depends_on:
+      tyk-redis:
+        condition: service_healthy
+  tyk-redis:
+    image: redis:${REDIS_DOCKER_IMAGE_TAG:-5.0-alpine}
+    networks:
+      - tyk
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 15
+
+networks:
+  tyk:
