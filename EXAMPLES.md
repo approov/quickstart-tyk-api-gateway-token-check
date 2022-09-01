@@ -48,7 +48,7 @@ You can ommit the `tyk-gateway` service to follow the logs of all services decla
 
 ## The HttpBin API Example
 
-We will create a proxy for httpnin.org where all the API endpoints require a valid and not expired Approov token.
+We will create a proxy for httpbin.org where all the API endpoints require a valid and not expired Approov token.
 
 We will use a bash script helper to simplify the usage, while at same time we provide the cURL command being executed by it. You can always see the exact cURL commands being executed by the bash script by invoking it in debug mode `bash -x ./tyk command`.
 
@@ -113,7 +113,7 @@ Content-Length: 53
 
 The important bits in the API definition are the keys `jwt_*` and in the key `auth_header_name`.
 
-### Creating the Approov Security Policy
+### Creating the Tyk Security Policy for Approov
 
 ```bash
 ./tyk create-policy
