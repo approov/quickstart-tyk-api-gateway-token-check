@@ -1,0 +1,55 @@
+{
+  "_id": "",
+  "id": "approov",
+  "name": "Approov",
+  "org_id": "1",
+  "rate": 0,
+  "per": 1,
+  "quota_max": -1,
+  "quota_renewal_rate": 0,
+  "throttle_interval": 0,
+  "throttle_retry_limit": 0,
+  "max_query_depth": 0,
+  "access_rights": {
+    "httpbin.org": {
+      "api_name": "HttpBin",
+      "api_id": "httpbin.org",
+      "versions": [
+        "Default"
+      ],
+      "allowed_urls": [],
+      "restricted_types": null,
+      "limit": {
+        "rate": 0,
+        "per": 0,
+        "throttle_interval": 0,
+        "throttle_retry_limit": 0,
+        "max_query_depth": 0,
+        "quota_max": 0,
+        "quota_renews": 0,
+        "quota_remaining": 0,
+        "quota_renewal_rate": 0
+      },
+      "field_access_rights": null,
+      "allowance_scope": ""
+    }
+  },
+  "hmac_enabled": false,
+  "enable_http_signature_validation": false,
+  "active": true,
+  "is_inactive": false,
+  "tags": [
+    "Approov"
+  ],
+  "key_expires_in": 0,
+  "partitions": {
+    "quota": false,
+    "rate_limit": false,
+    "complexity": false,
+    "acl": false,
+    "per_api": false
+  },
+  "last_updated": "",
+  "meta_data": null,
+  "graphql_access_rights": null
+}
