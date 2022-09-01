@@ -47,7 +47,7 @@ Next, update the API you want to protect with the Approov token check, by enabli
 
 **NOTE**: Enabling the JWT check will disable your current API key check, therefore if this approach for the Approov integration doesn't fit in your use case then please [contact us](https://approov.io/contact) to discuss alternative integrations of Approov in the Tyk API Gateway.
 
-Now, create the security policy for Approov. Add the following to your `policies/policies.json` file:
+Now, create the Tyk security policy for Approov. Add the following to your `policies/policies.json` file:
 
 ```json
 {

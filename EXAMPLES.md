@@ -158,7 +158,7 @@ Content-Length: 49
 
 ```
 
-The Approov security policy doesn't require rate limiting or quota usage, because the Approov token check guarantees with a very high degree of confidence that incoming requests are from **what** the Tyk API Gateway expects, a genuine and unmodified instance of your mobile app, not one that is under attack or that has been tampered with. Bots will not succeed on accessing the API because they are not able to provide an Approov token, and fake tokens will fail the signature check.
+The Tyk security policy for Approov doesn't require rate limiting or quota usage, because the Approov token check guarantees with a very high degree of confidence that incoming requests are from **what** the Tyk API Gateway expects, a genuine and unmodified instance of your mobile app, not one that is under attack or that has been tampered with. Bots will not succeed on accessing the API because they are not able to provide an Approov token, and fake tokens will fail the signature check.
 
 ### Reload the Tyk API Gateway
 

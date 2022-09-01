@@ -82,7 +82,7 @@ Keep it at hand, because you will need it in the next step.
 
 To check the Approov token in any existing Tyk API Gateway project we just need to enable the JWT chack and to create a security policy for the API we want to protect with Approov.
 
-First, create a new security policy for the Approov token check. Tyk supports several ways of creating a security policy, but all of them require the same fields to be given, therefore use the approach you are more comfortable with, and ensure that the following fields are set:
+First, create a new Tyk security policy for the Approov token check. Tyk supports several ways of creating a security policy, but all of them require the same fields to be given, therefore use the approach you are more comfortable with, and ensure that the following fields are set:
 
 ```json
 {
