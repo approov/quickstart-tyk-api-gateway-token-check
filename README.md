@@ -33,7 +33,10 @@ Now, get your Approov Secret with the [Approov CLI](https://approov.io/docs/late
 approov secret -get base64
 ```
 
-Next, update the API you want to protect with the Approov token check, by enabling the Tyk JWT check functionality on the API. Add the following fields to your API definition:
+Next, update the API you want to protect with the Approov token check, by enabling the Tyk JWT check functionality on the API. Enabling the JWT check will disable your current API key check, therefore you may want to follow instead the [Approov Token Python Plugin Quickstart](/docs/APPROOV_TOKEN_PYTHON_PLUGIN_QUICKSTART.md), that checks the Approov token in the Tyk Middleware on a pre Hook, before user authentication or API Keys checks.
+
+
+Add the following fields to your API definition to enable the JWT check:
 
 ```json
 "auth": {
@@ -42,10 +45,11 @@ Next, update the API you want to protect with the Approov token check, by enabli
 "jwt_signing_method": "hmac",
 "jwt_identity_base_field": "iss",
 "jwt_default_policies": ["approov"],
-"jwt_source": "___YOUR_APPROOV_BASE64_SECRET_HERE___"
+"jwt_source": "vault://engine/path/to/secret.___APPROOV_BASE64_SECRET_VAR_NAME_HERE___"
 ```
 
-**NOTE**: Enabling the JWT check will disable your current API key check, therefore if this approach for the Approov integration doesn't fit in your use case then please [contact us](https://approov.io/contact) to discuss alternative integrations of Approov in the Tyk API Gateway.
+**NOTE**: Tyk supports more then one mechanism to securely retrieve secrets, therefore you can use the one of your preference to retrieve the Approov secret for the key `jwt_source`, but **never** provide it hard-coded in the JSON configuration. For more information visit their docs page: [Key Value secrets storage for configuration in Tyk](https://tyk.io/docs/tyk-configuration-reference/kv-store/).
+
 
 Now, create the Tyk security policy for Approov. Add the following to your `policies/policies.json` file:
 
@@ -74,9 +78,9 @@ Now, create the Tyk security policy for Approov. Add the following to your `poli
 }
 ```
 
-**NOTE:** We recommend to disable rate limits and quotas for the Approov token check, because when an Approov token check is valid the API request comes from a trusted mobile app. If you still prefer to use rate limiting and quotas then feel free to adjust `rate`, `per`, `quota_max` as you see fit for your use case.
+**NOTE:** The Tyk security policy for Approov doesn't require rate limiting or quota usage, because the Approov token check guarantees with a very high degree of confidence that incoming requests are from **what** the Tyk API Gateway expects, a genuine and unmodified instance of your mobile app, not one that is under attack or that has been tampered with. Bots will not succeed on accessing the API because they are not able to provide an Approov token, and fake tokens will fail the signature check. If you still prefer to use rate limiting and quotas then feel free to adjust `rate`, `per`, `quota_max` as you see fit for your use case.
 
-Finally, reload your Tyk API Gateway and you will see that API requests without a correctly signed and not expired `Approov-Token` header will fail.
+Finally, reload your Tyk API Gateway and confirm that only serves API requests with a correctly signed and not expired `Approov-Token` header.
 
 Not enough details in the bare bones quickstart? No worries, check the [detailed quickstart](docs/APPROOV_TOKEN_QUICKSTART.md) that contain a more comprehensive set of instructions, including how to test the Approov integration.
 
@@ -84,8 +88,8 @@ Not enough details in the bare bones quickstart? No worries, check the [detailed
 ## More Information
 
 * [Approov Overview](OVERVIEW.md)
-* [Detailed Quickstart](docs/APPROOV_TOKEN_QUICKSTART.md)
-* [Examples](EXAMPLES.md)
+* [Detailed Quickstarts](QUICKSTARTS.md)
+* [Step by Step Examples](EXAMPLES.md)
 
 ### System Clock
 

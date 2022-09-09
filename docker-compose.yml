@@ -1,22 +1,6 @@
 version: '2.4'
 
 services:
-  tyk-gateway:
-    image: tykio/tyk-gateway:${TYK_DOCKER_IMAGE_TAG:-v4.1}
-    ports:
-      - ${TYK_HTTP_PORT:-8080}:8080
-    networks:
-      - tyk
-    volumes:
-      - ./examples/httpbin.org/tyk.standalone.conf:/opt/tyk-gateway/tyk.conf
-      - ./examples/httpbin.org/apps:/opt/tyk-gateway/apps
-      - ./examples/httpbin.org/policies:/opt/tyk-gateway/policies
-    environment:
-      - TYK_GW_SECRET=${TYK_GW_SECRET:? Missing .env var TYK_GW_SECRET}
-      - TYK_LOGLEVEL=${TYK_LOGLEVEL:-info}
-    depends_on:
-      tyk-redis:
-        condition: service_healthy
   tyk-redis:
     image: redis:${REDIS_DOCKER_IMAGE_TAG:-5.0-alpine}
     networks:
@@ -26,6 +10,73 @@ services:
       interval: 1s
       timeout: 3s
       retries: 15
+
+  tyk-build-bundle:
+    image: "approov/tyk-gateway:${TYK_DOCKER_IMAGE_TAG:-v4.1}"
+    build:
+      context: .
+      args:
+        TAG: ${TYK_DOCKER_IMAGE_TAG:-v4.1}
+    entrypoint: ""
+    command:
+      - /opt/tyk-gateway/tyk
+      - bundle
+      - build
+      - -y
+      - -o
+      - /opt/tyk-gateway/middleware/bundles/bundle.zip
+    networks:
+      - tyk
+    working_dir: /opt/tyk-gateway/middleware/plugins/python
+    volumes:
+      - ./middleware:/opt/tyk-gateway/middleware
+
+  tyk-serve-bundle:
+    image: "approov/tyk-gateway:${TYK_DOCKER_IMAGE_TAG:-v4.1}"
+    build:
+      context: .
+      args:
+        TAG: ${TYK_DOCKER_IMAGE_TAG:-v4.1}
+    entrypoint: ""
+    command:
+      - python3
+      - -m
+      - http.server
+    networks:
+      - tyk
+    working_dir: /opt/tyk-gateway/middleware
+    volumes:
+      - ./middleware/bundles:/opt/tyk-gateway/middleware
+    healthcheck:
+      test: ["CMD-SHELL", "curl -i http://tyk-serve-bundle:8000/bundle.zip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tyk-gateway:
+    image: "approov/tyk-gateway:${TYK_DOCKER_IMAGE_TAG:-v4.1}"
+    build:
+      context: .
+      args:
+        TAG: ${TYK_DOCKER_IMAGE_TAG:-v4.1}
+    ports:
+      - 127.0.0.1:${TYK_HTTP_PORT:-8080}:8080
+    networks:
+      - tyk
+    volumes:
+      - ./examples/tyk.standalone.conf:/opt/tyk-gateway/tyk.conf
+      - ./middleware:/opt/tyk-gateway/middleware
+      # - ./examples/httpbin.org/apps:/opt/tyk-gateway/apps
+      # - ./examples/httpbin.org/policies:/opt/tyk-gateway/policies
+    environment:
+      - TYK_GW_SECRET=${TYK_GW_SECRET:? Missing .env var TYK_GW_SECRET}
+      - TYK_LOGLEVEL=${TYK_LOGLEVEL:-info}
+      - APPROOV_BASE64_SECRET=${APPROOV_BASE64_SECRET:? Missing .env var APPROOV_BASE64_SECRET}
+    depends_on:
+      tyk-redis:
+        condition: service_healthy
+      tyk-serve-bundle:
+        condition: service_healthy
 
 networks:
   tyk:

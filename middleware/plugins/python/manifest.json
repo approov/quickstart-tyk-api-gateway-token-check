@@ -1,0 +1,13 @@
+{
+  "file_list": [
+    "verify-approov-token-middleware.py"
+  ],
+  "custom_middleware": {
+    "driver": "python",
+    "pre": [
+      {
+        "name": "VerifyApproovTokenMiddleware"
+      }
+    ]
+  }
+}
