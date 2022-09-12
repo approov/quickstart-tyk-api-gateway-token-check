@@ -61,10 +61,16 @@ Adding the API domain also configures the [dynamic certificate pinning](https://
 Approov tokens are signed with a symmetric secret. To verify tokens, we need to grab the secret using the [Approov secret command](https://approov.io/docs/latest/approov-cli-tool-reference/#secret-command) and plug it into the Tyk API Gateway configuration to check the signatures of the [Approov Tokens](https://www.approov.io/docs/latest/approov-usage-documentation/#approov-tokens) that it processes.
 
 
-To retrieved the Approov secret you need to enable your `admin` role with:
+To retrieve the Approov secret you need to enable your `admin` role with:
 
 ```bash
 eval `approov role admin`
+````
+
+For the Windows powershell:
+
+```bash
+set APPROOV_ROLE=admin:___YOUR_APPROOV_ACCOUNT_NAME_HERE___
 ````
 
 Retrieve the Approov secret with:
