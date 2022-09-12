@@ -1,6 +1,6 @@
-# Approov Token JWT Quickstart
+# Approov Token Python Plugin Quickstart
 
-This quickstart is for developers familiar with Tyk who are looking for a quick intro into how they can add [Approov](https://approov.io) into an existing project. Therefore this will guide you through the necessary steps for adding Approov to an existing Tyk API Gateway.
+This quickstart is for developers familiar with Tyk who are looking for a quick intro into how they can add [Approov](https://approov.io) into an existing project. Therefore this will guide you through the necessary steps for adding the Approov token check to an existing Tyk API Gateway as a Python plugin middleware.
 
 
 ## TOC - Table of Contents
@@ -73,16 +73,63 @@ Retrieve the Approov secret with:
 approov secret -get base64
 ```
 
-Keep it at hand, because you will need it in the next step.
+Next, set the secret in the Tyk server environment:
+
+```bash
+export APPROOV_BASE64_SECRET=___YOUR_APPROOV_BASE64_SECRET_HERE___
+```
 
 [TOC](#toc---table-of-contents)
 
 
 ## Approov Token Check
 
-To verifyiu the Approov token in any existing Tyk API Gateway project we just need to enable the JWT check and to create a security policy for the API we want to protect with Approov.
+To check the Approov token in any existing Tyk API Gateway project we will use a Python plugin that will run as a Tyk middleware.
 
-First, create a new Tyk security policy for the Approov token check. Tyk supports several ways of creating a security policy, but all of them require the same fields to be given, therefore use the approach you are more comfortable with, and ensure that the following fields are set:
+### Tyk Configuration
+
+You need to enable the use of the Tyk middleware for Python in your `tyk.conf` file:
+
+```json
+"coprocess_options": {
+  "enable_coprocess": true,
+  "coprocess_grpc_server": "",
+  "python_path_prefix": "/opt/tyk-gateway"
+},
+"middleware_path": "/opt/tyk-gateway/middleware",
+"enable_bundle_downloader": true,
+"bundle_base_url": "https://your-bundle-base-url.com/tyk-bundles/",
+"public_key_path": "/path/to/my/public-key",
+```
+
+### Tyk Bundle
+
+Tyk requires the bundle to be accessible via an URL. See more details in the Tyk docs at [Downloading and Updating Bundles](https://tyk.io/docs/plugins/how-to-serve-plugins/plugin-bundles/#downloading-and-updating-bundles).
+
+Bear in mind that Tyk caches the bundle after downloading it for the first time, therefore you need to version it, for example `approov-python-plugin-bundle-01.zip`, and each time you modify it you will increment the version, update the API definition accordingly and then reload Tyk. Alternatively, you may delete the cached bundle from Tyk manually at `{TYK ROOT}/{CONFIG_MIDDLEWARE_PATH}/bundles`, that by default its `/opt/tyk-gateway/middleware/bundles`, followed by a hot reload that will download the new bundle.
+
+The bundle needs to be signed with the private key for the public key you provided in the `tyk.conf` file. Build the bundle with:
+
+```bash
+/opt/tyk-gateway/tyk bundle build --key /path/to/my/private-key --output /opt/tyk-gateway/middleware/bundles/approov-python-plugin-bundle-01.zip
+```
+
+Next, upload the `/opt/tyk-gateway/middleware/bundles/approov-python-plugin-bundle-01.zip` to the base URL you have defined in the `tyk.conf` file so that it will be acessible at `https://your-bundle-base-url.com/tyk-bundles/approov-python-plugin-bundle-01.zip`.
+
+
+### Tyk API Configuration
+
+You need to configure your API definition with the name of the bundle file used in the previous step:
+
+```json
+"custom_middleware_bundle": "approov-python-plugin-bundle-01.zip"
+```
+
+### Tyk Security Policy
+
+Optionally you can create a new Tyk security policy for the API protected with the Approov token check. We recommend to disable rate limits and quotas, because when an Approov token check is valid the API request comes from a trusted mobile app. If you still prefer to use rate limiting and quotas then feel free to continue using your current security policy.
+
+Tyk supports several ways of creating a security policy, but all of them require the same fields to be given, therefore use the approach you are more comfortable with, and ensure that the following fields are set:
 
 ```json
 {
@@ -109,25 +156,11 @@ First, create a new Tyk security policy for the Approov token check. Tyk support
 }
 ```
 
-Next, you need to enable the JWT check with the `approov` security policy on the API you want to protect with Approov. Enabling the JWT check will disable your current API key check, therefore you may want to follow instead the [Approov Token Python Plugin Quickstart](/docs/APPROOV_TOKEN_PYTHON_PLUGIN_QUICKSTART.md), that checks the Approov token in the Tyk Middleware on a pre Hook, before user authentication or API Keys checks.
-
-To update the API use the method of your preference and ensure that the API definition has the following fields set:
-
-```json
-"auth": {
-    "auth_header_name": "Approov-Token"
-},
-"jwt_signing_method": "hmac",
-"jwt_identity_base_field": "iss",
-"jwt_default_policies": ["approov"],
-"jwt_source": "vault://engine/path/to/secret.___APPROOV_BASE64_SECRET_VAR_NAME_HERE___"
-```
-
-**NOTE**: Tyk supports more then one mechanism to securely retrieve secrets, therefore you you are free to use one of your preference to retrieve the Approov secret for the key `jwt_source`, but **never** provide it hard-coded in the JSON configuration. For more information visit their docs page: [Key Value secrets storage for configuration in Tyk](https://tyk.io/docs/tyk-configuration-reference/kv-store/).
+### Tyk Reload
 
 Finally, reload your Tyk API Gateway and confirm that only serves API requests with a correctly signed and not expired `Approov-Token` header. The next section has some guidance on how to test your Approov integration.
 
-A full working example can be found at [examples/TYK_GATEWAY_APPROOV_JWT_EXAMPLE.md](/examples/TYK_GATEWAY_APPROOV_JWT_EXAMPLE.md).
+A full working example can be found at [examples/TYK_GATEWAY_APPROOV_PYTHON_PLUGIN_EXAMPLE.md](/examples/TYK_GATEWAY_APPROOV_PYTHON_PLUGIN_EXAMPLE.md).
 
 [TOC](#toc---table-of-contents)
 
@@ -136,7 +169,7 @@ A full working example can be found at [examples/TYK_GATEWAY_APPROOV_JWT_EXAMPLE
 
 The following examples below use cURL to perform the API requests.
 
-For more testing scenarios see the full working example for a Tyk API Gateway at [Testing the Approov Integration](/examples/TYK_GATEWAY_APPROOV_JWT_EXAMPLE.md#testing-the-approov-integration).
+For more testing scenarios see the full working example for a Tyk API Gateway at [Testing the Approov Integration](/examples/TYK_GATEWAY_APPROOV_PYTHON_PLUGIN_EXAMPLE.md#testing-the-approov-integration).
 
 ### With Valid Approov Tokens
 
@@ -151,6 +184,7 @@ Then make the request with the generated token:
 ```bash
 curl https://your.tyk-api-gateway.domain.com \
   -i \
+  --header 'Api-Key: YOUR_API_KEY_HERE' \
   --header 'Approov-Token: APPROOV_TOKEN_EXAMPLE_HERE'
 ```
 
@@ -196,11 +230,11 @@ The above request should fail with an Unauthorized error. For example:
 HTTP/1.1 401 Unauthorized
 Content-Type: application/json
 X-Generator: tyk.io
-Date: Wed, 31 Aug 2022 16:10:44 GMT
-Content-Length: 56
+Date: Thu, 08 Sep 2022 19:23:57 GMT
+Content-Length: 31
 
 {
-    "error": "Key not authorized: token has expired"
+    "error": "Unauthorized"
 }
 ```
 

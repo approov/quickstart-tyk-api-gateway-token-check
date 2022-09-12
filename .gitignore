@@ -2,3 +2,5 @@ tyk-gateway/apps/*
 !/tyk-gateway/apps/.gitkeep
 tyk-gateway/policies/*
 !/tyk-gateway/policies/.gitkeep
+middleware/bundles/*
+!middleware/bundles/.gitkeep
